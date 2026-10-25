@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Video Library</title>
+  <style nonce="__NONCE__">
+    :root {
+      color-scheme: light;
+      --canvas: #f1f4f8;
+      --surface: #fff;
+      --ink: #263346;
+      --secondary: #6b7789;
+      --accent: #ce306b;
+      --accent-hover: #b8225a;
+      --line: #e1e6ee;
+      --success: #23735e;
+      --danger: #b63d49;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.6 "Segoe UI Variable Text", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:disabled { cursor: default; }
+    button, a, summary { outline-offset: 4px; }
+    button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #e395b4; }
+    svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .app { width: min(100% - 64px, 680px); margin: clamp(46px, 11vh, 112px) auto 48px; }
+    .header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 27px; }
+    .identity { display: flex; align-items: center; gap: 14px; }
+    .mark { width: 35px; height: 42px; color: var(--accent); display: grid; place-items: center; }
+    .mark svg { width: 35px; height: 42px; stroke-width: 1.5; }
+    h1 { margin: 0; font-size: 27px; line-height: 1.3; font-weight: 650; letter-spacing: -.8px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-button, .gallery { border: 0; background: transparent; color: var(--secondary); display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; height: 34px; }
+    .icon-button { width: 34px; padding: 0; }
+    .icon-button:hover { background: #e6ebf2; color: var(--ink); }
+    .gallery { gap: 7px; padding: 0 9px; margin-right: 7px; color: #526076; font-size: 12px; }
+    .gallery svg { width: 15px; height: 15px; }
+    .gallery:hover { color: var(--accent); }
+    .gallery-picker { position: relative; }
+    .gallery .gallery-arrow { width: 12px; height: 12px; transition: transform .15s; }
+    .gallery[aria-expanded="true"] .gallery-arrow { transform: rotate(180deg); }
+    .gallery-menu { position: absolute; z-index: 20; right: 7px; top: calc(100% + 7px); min-width: 150px; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 8px 26px #26334612; }
+    .gallery-menu button { display: block; width: 100%; padding: 8px 11px; border: 0; border-radius: 7px; background: transparent; color: var(--ink); text-align: left; font-size: 13px; }
+    .gallery-menu button:hover, .gallery-menu button:focus-visible { background: #f8edf2; color: var(--accent); }
+    .header-actions .divider { width: 1px; height: 16px; background: #dbe1e9; margin-right: 3px; }
+    .composer { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; box-shadow: 0 5px 20px #26334604, 0 1px 3px #26334603; overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+    .composer:focus-within { border-color: #d68eaa; box-shadow: 0 0 0 3px #ce306b08, 0 5px 20px #26334604; }
+    textarea { display: block; resize: vertical; width: 100%; min-height: 214px; max-height: 440px; padding: 25px 26px 13px; border: 0; outline: none; background: transparent; color: #3c4a60; line-height: 1.9; font-size: 14px; overflow-wrap: anywhere; }
+    textarea::placeholder { color: #8c96a5; }
+    textarea:disabled { color: #7c8797; }
+    .composer-actions { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 16px 23px 21px 26px; }
+    .input-count { color: var(--secondary); font-size: 12px; min-height: 20px; font-variant-numeric: tabular-nums; }
+    .import-button { display: flex; align-items: center; justify-content: center; gap: 9px; min-width: 103px; height: 41px; border: 1px solid #b5255b; border-radius: 10px; background: var(--accent); color: white; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px #ce306b18; transition: background .15s; }
+    .import-button:hover:not(:disabled) { background: var(--accent-hover); }
+    .import-button:disabled { background: #e4b5c7; border-color: #dfb6c7; box-shadow: none; }
+    .import-button svg { width: 16px; height: 16px; }
+    .spinner { width: 14px; height: 14px; border: 1.5px solid #ffffff66; border-top-color: white; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    progress { display: block; width: 100%; height: 2px; border: 0; accent-color: var(--accent); background: #f4e3eb; }
+    progress::-webkit-progress-bar { background: #f4e3eb; }
+    progress::-webkit-progress-value { background: var(--accent); }
+    .library { color: var(--secondary); font-size: 11px; margin: 13px 2px 0; }
+    .library span { font-variant-numeric: tabular-nums; }
+    .results { margin-top: 29px; }
+    .results summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--secondary); font-size: 12px; cursor: pointer; padding: 0 2px 13px; }
+    .results summary::-webkit-details-marker { display: none; }
+    .result-counts { display: flex; align-items: center; gap: 19px; flex-wrap: wrap; }
+    .result-counts b { font-weight: 600; margin-left: 5px; color: var(--ink); font-variant-numeric: tabular-nums; }
+    .result-counts .added, .result-counts .added b { color: var(--success); }
+    .result-counts .failed, .result-counts .failed b { color: var(--danger); }
+    .chevron { width: 15px; height: 15px; transition: transform .15s; }
+    details[open] .chevron { transform: rotate(180deg); }
+    .items { margin: 0; padding: 0; list-style: none; border-top: 1px solid #dfe5ed; max-height: 310px; overflow-y: auto; }
+    .item { display: flex; align-items: flex-start; gap: 12px; padding: 17px 2px; border-bottom: 1px solid #e2e7ee; }
+    .item-icon { width: 21px; height: 21px; display: grid; place-items: center; color: #8b96a5; margin-top: 1px; flex: none; }
+    .item-icon svg { width: 17px; height: 17px; }
+    .item[data-status="success"] .item-icon { color: var(--success); }
+    .item[data-status="failed"] .item-icon { color: var(--danger); }
+    .item-content { flex: 1; min-width: 0; }
+    .item-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+    .item-title { color: #405068; font-size: 13px; line-height: 1.7; text-decoration: none; overflow-wrap: anywhere; }
+    a.item-title:hover { color: var(--accent); }
+    .badge { color: var(--secondary); white-space: nowrap; font-size: 11px; }
+    .item[data-status="success"] .badge { color: var(--success); }
+    .item[data-status="failed"] .badge { color: var(--danger); }
+    .error-detail { margin: 5px 0 0; color: #a44d57; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+    .notice { margin-top: 19px; font-size: 12px; line-height: 1.8; color: var(--danger); }
+    .resume { border: 0; padding: 0; margin-left: 10px; background: transparent; color: inherit; text-decoration: underline; }
+    @media (max-width: 540px) {
+      .app { width: calc(100% - 36px); margin-top: 44px; }
+      .header { gap: 8px; margin-bottom: 23px; }
+      .identity { gap: 10px; }
+      h1 { font-size: 24px; }
+      .mark, .mark svg { width: 29px; height: 36px; }
+      .header-actions { gap: 2px; }
+      .gallery { margin-right: 2px; gap: 5px; padding: 0 5px; font-size: 11px; }
+      .header-actions .divider { display: none; }
+      .icon-button { width: 30px; }
+      textarea { padding: 22px 20px 12px; min-height: 204px; font-size: 13px; }
+      .composer-actions { padding: 12px 18px 18px 20px; }
+      .item-head { gap: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="identity"><div class="mark" aria-hidden="true"><svg viewBox="0 0 36 44"><path d="M7 5h22a2 2 0 0 1 2 2v32L18 32 5 39V7a2 2 0 0 1 2-2Z"/><path d="m15 13 9 6-9 6Z"/></svg></div><h1>Video Library</h1></div>
+      <nav class="header-actions" aria-label="Tools">
+        <div class="gallery-picker" id="galleryPicker">
+          <button class="gallery" id="gallery" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="galleryMenu"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="12" y="3" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>Gallery<svg class="gallery-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
+          <div class="gallery-menu" id="galleryMenu" role="menu" aria-label="Choose gallery" hidden>
+            <button id="galleryBilibili" type="button" role="menuitem">Bilibili</button>
+            <button id="galleryYouTube" type="button" role="menuitem">YouTube</button>
+          </div>
+        </div>
+        <span class="divider" aria-hidden="true"></span>
+        <button class="icon-button" id="shutdown" type="button" aria-label="Close tool" title="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+      </nav>
+    </header>
+    <form class="composer" id="composer" autocomplete="off">
+      <textarea id="links" aria-label="Video links" autocomplete="off" spellcheck="false" placeholder="Paste Bilibili or YouTube links…"></textarea>
+      <div class="composer-actions"><span class="input-count" id="inputCount" role="status"></span><button class="import-button" id="import" type="submit" disabled><svg id="importIcon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m-4-4 4 4 4-4M4 14v3h12v-3"/></svg><span class="spinner" id="spinner" aria-hidden="true" hidden></span><span id="importLabel">Import</span></button></div>
+      <progress id="progress" max="1" value="0" aria-label="Import progress" hidden></progress>
+    </form>
+    <p class="library" id="library" hidden><span id="libraryCount"></span> saved</p>
+    <details class="results" id="results" hidden>
+      <summary aria-label="Import results"><span class="result-counts" id="resultCounts"></span><svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary>
+      <ul class="items" id="items" aria-label="Import details"></ul>
+    </details>
+    <div class="notice" id="notice" role="status" hidden><span id="noticeText"></span><button class="resume" id="resume" type="button" hidden>Reconnect</button></div>
+  </main>
+  <script nonce="__NONCE__">
+    "use strict";
+    const config = __BOOTSTRAP__;
+    const $ = id => document.getElementById(id);
+    const input = $("links");
+    let busy = false, closing = false, currentJob = null, rendered = 0, polling = false, heartbeat, pageSession, galleryOpening = false;
+    const galleryItems = [$("galleryBilibili"), $("galleryYouTube")];
+
+    function clearSavedInput() {
+      for(const name of ["localStorage", "sessionStorage"]) {
+        try {
+          const storage = window[name];
+          for(let index = storage.length - 1; index >= 0; index--) {
+            const key = storage.key(index);
+            if(/^(?:bili|obsidian-video-collection|video-to-obsidian)\.(?:draft|job)\./.test(key || "")) storage.removeItem(key);
+          }
+        } catch {}
+      }
+    }
+    function connectPage() {
+      if(closing || pageSession) return;
+      pageSession = new EventSource("/api/session?" + new URLSearchParams({client:config.client,token:config.token}));
+    }
+    function closeNotification(path) {
+      const payload = JSON.stringify({client:config.client,token:config.token});
+      let sent = false;
+      try { sent = navigator.sendBeacon(path,new Blob([payload],{type:"application/json"})); } catch {}
+      if(!sent) fetch(path,{method:"POST",headers:{"Content-Type":"application/json","X-Bili-Token":config.token},body:payload,keepalive:true}).catch(() => {});
+    }
+    function disconnectPage() {
+      closeNotification("/api/client-close");
+      pageSession?.close(); pageSession = null;
+    }
+    function notice(text = "", canResume = false) { $("notice").hidden = !text; $("noticeText").textContent = text; $("resume").hidden = !canResume; }
+    function setGalleryMenu(open, focusIndex = null) {
+      open = open && !closing && !galleryOpening;
+      $("galleryMenu").hidden = !open;
+      $("gallery").setAttribute("aria-expanded", String(open));
+      if(open && focusIndex !== null) galleryItems[focusIndex].focus();
+    }
+    function dismissGalleryMenu(returnFocus = false) {
+      setGalleryMenu(false);
+      if(returnFocus && !closing) $("gallery").focus();
+    }
+    async function openGallery(platform) {
+      if(closing || galleryOpening) return;
+      dismissGalleryMenu(true);
+      galleryOpening = true; controls();
+      try { await api("/api/open-gallery", {platform}); }
+      catch(error) { notice(error.message); }
+      finally { galleryOpening = false; controls(); }
+    }
+    function controls() {
+      input.disabled = busy || closing;
+      $("import").disabled = busy || closing || !input.value.trim();
+      $("importLabel").textContent = busy ? "Importing" : "Import";
+      $("spinner").hidden = !busy; $("importIcon").hidden = busy;
+      $("shutdown").disabled = closing;
+      $("gallery").disabled = closing || galleryOpening;
+      galleryItems.forEach(item => { item.disabled = closing || galleryOpening; });
+      if(closing) setGalleryMenu(false);
+      if(!busy) { const lines = input.value.trim().split(/\n/).filter(line => line.trim()).length; $("inputCount").textContent = input.value.trim() ? `${lines} line${lines === 1 ? "" : "s"}` : ""; }
+    }
+    async function api(path, body) {
+      const options = {cache:"no-store"};
+      if(body !== undefined) Object.assign(options, {method:"POST",headers:{"Content-Type":"application/json","X-Bili-Token":config.token},body:JSON.stringify(body),keepalive:path === "/api/shutdown"});
+      const response = await fetch(path, options), data = await response.json();
+      if(!response.ok) { const error = new Error(data.error || "Something went wrong. Try again."); error.status = response.status; throw error; }
+      return data;
+    }
+    async function refreshInfo() {
+      const info = await api("/api/info"); $("libraryCount").textContent = info.count; $("library").hidden = false; return info;
+    }
+    function clearResults() { rendered = 0; $("results").hidden = true; $("items").replaceChildren(); $("resultCounts").replaceChildren(); $("progress").hidden = true; }
+    function addCount(label, count, className) {
+      if(!count) return;
+      const span = document.createElement("span"); if(className) span.className = className;
+      span.append(document.createTextNode(label)); const value = document.createElement("b"); value.textContent = count; span.append(value); $("resultCounts").append(span);
+    }
+    function addRow(row) {
+      const li = document.createElement("li"); li.className = "item"; li.dataset.status = row.status;
+      const icon = document.createElement("span"); icon.className = "item-icon"; icon.setAttribute("aria-hidden","true");
+      const svg = document.createElementNS("http://www.w3.org/2000/svg","svg"); svg.setAttribute("viewBox","0 0 20 20");
+      const path = document.createElementNS("http://www.w3.org/2000/svg","path"); path.setAttribute("d", row.status === "failed" ? "M10 4v7m0 4v.1" : row.status === "success" ? "m4 10 4 4 8-8" : "M6 4v5h9m-4-4 4 4-4 4"); svg.append(path); icon.append(svg);
+      const content = document.createElement("div"); content.className = "item-content";
+      const head = document.createElement("div"); head.className = "item-head";
+      const title = document.createElement(row.video_id ? "a" : "span"); title.className = "item-title"; title.textContent = row.title || row.video_id || row.source;
+      if(row.video_id) { title.href = row.platform === "youtube" ? "https://www.youtube.com/watch?v=" + encodeURIComponent(row.video_id) : "https://www.bilibili.com/video/" + encodeURIComponent(row.video_id) + "/"; title.target = "_blank"; title.rel = "noopener noreferrer"; }
+      const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = {success:"Added",existing:"Saved",duplicate:"Duplicate",failed:"Failed"}[row.status] || "";
+      head.append(title,badge); content.append(head);
+      if(row.status === "failed") { const error = document.createElement("p"); error.className = "error-detail"; error.textContent = row.message; content.append(error); }
+      li.append(icon,content); $("items").append(li);
+    }
+    function render(job) {
+      $("progress").hidden = job.state !== "running"; $("progress").max = job.total; $("progress").value = job.processed;
+      $("inputCount").textContent = job.state === "running" ? `${job.processed} / ${job.total}` : "";
+      $("resultCounts").replaceChildren();
+      addCount("Added",job.counts.success,"added"); addCount("Duplicates",job.counts.existing + job.counts.duplicate,""); addCount("Failed",job.counts.failed,"failed");
+      if(!$("resultCounts").childElementCount && job.state !== "running") $("resultCounts").textContent = "No videos added";
+      if(job.results.length) { $("results").hidden = false; if(!rendered) $("results").open = true; }
+      for(const row of job.results.slice(rendered)) addRow(row); rendered = job.results.length;
+    }
+    async function poll() {
+      if(polling || !currentJob || closing) return;
+      polling = true;
+      try {
+        const job = await api("/api/jobs/" + encodeURIComponent(currentJob)); render(job);
+        if(job.state !== "running") {
+          busy = false; currentJob = null;
+          if(input.value === job.input_text) input.value = job.remaining_text;
+          $("results").open = !!job.remaining_text; notice(job.error || ""); controls(); await refreshInfo();
+        } else setTimeout(poll,600);
+      } catch(error) {
+        if(error.status === 404) { currentJob = null; busy = false; controls(); notice("Task ended. Import again to continue."); }
+        else notice("Connection lost. Reconnect to continue.",!!currentJob);
+      } finally { polling = false; }
+    }
+    async function start() {
+      if(busy || closing || !input.value.trim()) return;
+      busy = true; clearResults(); notice(); controls(); $("inputCount").textContent = "Preparing…";
+      try { const result = await api("/api/jobs",{text:input.value}); currentJob = result.id; await poll(); }
+      catch(error) { busy = false; controls(); notice(error.message); }
+    }
+    input.addEventListener("input", () => { clearResults(); notice(); controls(); });
+    input.addEventListener("keydown", event => { if(event.ctrlKey && event.key === "Enter") { event.preventDefault(); start(); } });
+    $("composer").addEventListener("submit", event => { event.preventDefault(); start(); });
+    $("resume").addEventListener("click", () => { notice(); poll(); });
+    $("gallery").addEventListener("click", () => setGalleryMenu($("galleryMenu").hidden, 0));
+    $("gallery").addEventListener("keydown", event => {
+      if(event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault(); setGalleryMenu(true, event.key === "ArrowUp" ? galleryItems.length - 1 : 0);
+      }
+    });
+    $("galleryBilibili").addEventListener("click", () => openGallery("bilibili"));
+    $("galleryYouTube").addEventListener("click", () => openGallery("youtube"));
+    $("galleryMenu").addEventListener("keydown", event => {
+      const current = galleryItems.indexOf(document.activeElement);
+      if(event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const direction = event.key === "ArrowDown" ? 1 : -1;
+        galleryItems[current < 0 ? (direction > 0 ? 0 : galleryItems.length - 1) : (current + direction + galleryItems.length) % galleryItems.length].focus();
+      } else if(event.key === "Home" || event.key === "End") {
+        event.preventDefault(); galleryItems[event.key === "Home" ? 0 : galleryItems.length - 1].focus();
+      } else if(event.key === "Tab") dismissGalleryMenu();
+    });
+    document.addEventListener("click", event => { if(!$("galleryPicker").contains(event.target)) dismissGalleryMenu(); });
+    document.addEventListener("keydown", event => {
+      if(event.key === "Escape" && !$("galleryMenu").hidden) { event.preventDefault(); dismissGalleryMenu(true); }
+    });
+    $("shutdown").addEventListener("click", async () => {
+      if(closing) return;
+      input.value = ""; clearSavedInput(); closing = true; controls(); clearInterval(heartbeat);
+      closeNotification("/api/shutdown");
+      pageSession?.close(); pageSession = null;
+      await Promise.race([api("/api/shutdown",{}),new Promise(resolve => setTimeout(resolve,400))]).catch(() => {});
+      window.close();
+      setTimeout(() => { window.location.replace("about:blank"); },120);
+    });
+    window.addEventListener("pagehide", () => { input.value = ""; clearSavedInput(); disconnectPage(); });
+    window.addEventListener("pageshow", () => { input.value = ""; clearSavedInput(); if(!closing) { controls(); connectPage(); } });
+    clearSavedInput(); input.value = ""; setGalleryMenu(false); controls();
+    connectPage();
+    (async () => { try { const info = await refreshInfo(); if(info.active_job) { currentJob = info.active_job; busy = true; controls(); await poll(); } } catch(error) { notice("Tool disconnected. Reopen to continue."); } })();
+    heartbeat = setInterval(() => { if(!closing) refreshInfo().catch(() => {}); },25000);
+  </script>
+</body>
+</html>

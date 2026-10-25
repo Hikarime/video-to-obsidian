@@ -1,0 +1,6 @@
+{
+  "collections": {
+    "bilibili": "../bilibili",
+    "youtube": "../youtube"
+  }
+}

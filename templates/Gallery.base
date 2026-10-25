@@ -1,0 +1,91 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - 'file.inFolder(this.file.folder + "/videos")'
+formulas:
+  title: 'file.asLink(note.title)'
+  time_text: 'if(note.watched_time, note.watched_time.toString(), "00:00")'
+  valid_time: '/^(?:[0-5][0-9]:[0-5][0-9]|(?:0[1-9]|[1-9][0-9]+):[0-5][0-9]:[0-5][0-9])$/.matches(formula.time_text)'
+  watched_seconds: 'if(formula.valid_time, formula.time_text.split(":").reduce(acc * 60 + number(value), 0), 0)'
+  total_seconds: 'if(note.duration, note.duration.split(":").reduce(acc * 60 + number(value), 0), 0)'
+  status: 'if(!formula.valid_time, "Invalid time", if(formula.total_seconds > 0 && formula.watched_seconds >= formula.total_seconds, "Watched", if(formula.watched_seconds > 0, "Watching", "Unwatched")))'
+  progress: 'if(formula.status == "Watched", "Watched", if(formula.valid_time, formula.time_text, "Invalid time"))'
+  watch: 'link(note.url, "▶ Watch")'
+properties:
+  formula.title:
+    displayName: Title
+  note.duration:
+    displayName: Duration
+  note.uploader:
+    displayName: Uploader
+  note.watched_time:
+    displayName: Watched time
+  formula.progress:
+    displayName: Progress
+  formula.status:
+    displayName: Status
+  note.tags:
+    displayName: Tags
+  formula.watch:
+    displayName: Play
+views:
+  - type: cards
+    name: All
+    image: note.cover
+    imageFit: cover
+    imageAspectRatio: 0.5625
+    cardSize: 280
+    order:
+      - formula.title
+      - note.duration
+      - formula.progress
+      - note.uploader
+      - note.tags
+      - formula.watch
+    sort:
+      - property: file.ctime
+        direction: DESC
+      - property: file.name
+        direction: ASC
+  - type: cards
+    name: To Watch
+    filters:
+      and:
+        - 'formula.status != "Watched"'
+    image: note.cover
+    imageFit: cover
+    imageAspectRatio: 0.5625
+    cardSize: 280
+    order:
+      - formula.title
+      - note.duration
+      - formula.progress
+      - note.uploader
+      - note.tags
+      - formula.watch
+    sort:
+      - property: file.ctime
+        direction: DESC
+      - property: file.name
+        direction: ASC
+  - type: cards
+    name: Watched
+    filters:
+      and:
+        - 'formula.status == "Watched"'
+    image: note.cover
+    imageFit: cover
+    imageAspectRatio: 0.5625
+    cardSize: 280
+    order:
+      - formula.title
+      - note.duration
+      - formula.progress
+      - note.uploader
+      - note.tags
+      - formula.watch
+    sort:
+      - property: file.ctime
+        direction: DESC
+      - property: file.name
+        direction: ASC
